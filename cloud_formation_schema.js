@@ -24,17 +24,14 @@ var cloudFormationSchema = (function(){
     var parsedCFDocFileName = basePath + '/generated_files/parsedCFDoc';
 
     var CFResourceSchema = basePath + '/generated_files/cloudFormationResources.js';
-
-
+    
     function crawl(){
-        if (!fs.existsSync(parsedCFDocFileName)) {
-            console.log('Crawling from: ' + urlToCrawl);
-            fetcher.crawl(urlToCrawl).then(function (htmlFileNames) {
-                extracter.run(parsedCFDocFileName, htmlFileNames).then(function (parsedCFDocFileName) {
-                    generateSchema.writeSchema(parsedCFDocFileName, CFResourceSchema);
-                })
+        console.log('Crawling from: ' + urlToCrawl);
+        fetcher.crawl(urlToCrawl).then(function (htmlFileNames) {
+            extracter.run(parsedCFDocFileName, htmlFileNames).then(function (parsedCFDocFileName) {
+                generateSchema.writeSchema(parsedCFDocFileName, CFResourceSchema);
             })
-        }
+        })
     }
     // this method is for developing purposes
     function generateSchemaFromParsedCFDoc(){
