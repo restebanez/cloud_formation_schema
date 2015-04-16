@@ -11,6 +11,7 @@
 var cloudFormationSchema = (function(){
 
     var fs = require('fs');
+    var path = require('path');
 
     var fetcher = require('./lib/fetcher');
     var extracter = require('./lib/extracter');
@@ -19,10 +20,10 @@ var cloudFormationSchema = (function(){
     var urlToCrawl = 'https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html';
 
     // generated file from the html docs
-    var parsedCFDocFileName = './generated_files/parsedCFDoc.json';
+    var basePath = path.dirname(require.resolve('./base_path'));
+    var parsedCFDocFileName = basePath + '/generated_files/parsedCFDoc';
 
-    //var CFResourceSchema = '../bsite/js/build/json-form-viewer-cf/cf-schemas/generatedResource.js';
-    var CFResourceSchema = './generated_files/cloudFormationResources.js';
+    var CFResourceSchema = basePath + '/generated_files/cloudFormationResources.js';
 
 
     function crawl(){
@@ -40,14 +41,14 @@ var cloudFormationSchema = (function(){
         generateSchema.writeSchema(parsedCFDocFileName, CFResourceSchema);
     }
     
-    function loadCFSchema(){
-        return require(CFResourceSchema);
+    function loadAllCFResources(){
+        return require(CFResourceSchema).schema;
     }
 
     // Public methods
     return {
         crawl: crawl,
-        loadCFSchema: loadCFSchema,
+        loadAllCFResources: loadAllCFResources,
         generateSchemaFromParsedCFDoc: generateSchemaFromParsedCFDoc
     }
 
