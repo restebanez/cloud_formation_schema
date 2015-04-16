@@ -7,6 +7,8 @@
 
 "use strict";
 
+
+
 // using revealing module pattern
 var cloudFormationSchema = (function(){
 
@@ -17,6 +19,8 @@ var cloudFormationSchema = (function(){
     var extracter = require('./lib/extracter');
     var generateSchema = require('./lib/generateSchema');
 
+    var search = require('./lib/search');
+
     var urlToCrawl = 'https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html';
 
     // generated file from the html docs
@@ -24,7 +28,13 @@ var cloudFormationSchema = (function(){
     var parsedCFDocFileName = basePath + '/generated_files/parsedCFDoc';
 
     var CFResourceSchema = basePath + '/generated_files/cloudFormationResources.js';
-    
+
+    function throwIfresourceSchemaDoesNotExist(){
+        if(!fs.existsSync(CFResourceSchema)){
+            throw(CFResourceSchema + " file doesn't exist. crawl() it first")
+        }
+    }
+
     function crawl(){
         console.log('Crawling from: ' + urlToCrawl);
         fetcher.crawl(urlToCrawl).then(function (htmlFileNames) {
@@ -38,15 +48,31 @@ var cloudFormationSchema = (function(){
         generateSchema.writeSchema(parsedCFDocFileName, CFResourceSchema);
     }
     
-    function loadAllCFResources(){
+    function loadSchemaResources(){
+        throwIfresourceSchemaDoesNotExist();
         return require(CFResourceSchema).schema;
+    }
+
+    function loadResourcesSchema(){
+        throwIfresourceSchemaDoesNotExist();
+        return require('./static_schema/cf_schema').schema;
+
+    }
+
+    function searchResource(awsResource){
+        throwIfresourceSchemaDoesNotExist();
+        var resourcesSchema = require(CFResourceSchema).schema;
+        var getSchemaResourcebyAwsType = search.getSchemaResourcebyAwsType;
+        return getSchemaResourcebyAwsType(resourcesSchema,  awsResource);
     }
 
     // Public methods
     return {
         crawl: crawl,
-        loadAllCFResources: loadAllCFResources,
-        generateSchemaFromParsedCFDoc: generateSchemaFromParsedCFDoc
+        loadResourcesSchema: loadResourcesSchema,
+        loadSchema: loadSchemaResources,
+        generateSchemaFromParsedCFDoc: generateSchemaFromParsedCFDoc,
+        searchResource: searchResource
     }
 
 }());
